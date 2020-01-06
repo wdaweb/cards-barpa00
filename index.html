@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        #game{
+            width: 500px;
+            margin: auto;
+            position: relative;
+            top: 15px;
+        }
+        .card{
+            width: 100px;
+            height: 180px;
+            /*設定子元素在 3D 空間內*/
+            transform-style: preserve-3d;
+            transition: transform 0.5s;
+            float: left;
+            margin: 10px;
+        }
+        .open{
+            transform: rotateY(180deg);
+        }
+        .front{
+            width: 100%;
+            height: 100%;
+            background-image: url(./card/Red_back.jpg);
+            background-position: center;
+            background-size: contain;
+            background-repeat: no-repeat;
+            position: absolute;
+     
+            
+        }
+        .back{
+            width: 100%;
+            height: 100%;
+            /* background-image: url(./card/1H.jpg); */
+            background-position: center;
+            background-size: contain;
+            background-repeat: no-repeat;
+            position: absolute;
+            transform: rotateY(180deg);
+        }
+        .btn{
+            text-align: center;
+            position: absolute;
+            top: 88%;
+            left: 48%;
+        }
+      
+    </style>
+</head>
+<body>
+    <div id="game">
+        <!-- <div class="card">
+            <div class="front"></div>
+            <div class="back"></div>
+        </div> -->
+    </div>
+    <div class="btn">
+        <input type="button" value="start" id="start">
+        <input type="button" value="cheat" id="cheat"><br>
+        剩餘<span id="sec">20</span>秒
+    </div>
+    <script src="jquery-3.4.1.min.js"></script>
+    <script>
+
+        $(function(){
+          
+            
+            
+
+            // 產生16張牌
+            for(let i=0;i<16;i++){
+                $("#game").append(/*html*/
+           `<div class="card" dd= "1">
+                <div class="front"></div>
+                <div class="back"></div>
+            </div>
+                `)
+            }
+
+            for(let i=0;i<$(".card").length;i++){
+                /*每個花色要有兩個才能消除
+                 16 張牌 8 個花色 
+                以 1 / 8 的餘數來判斷要放哪張牌
+                牌號從1開始 所以  +1
+                */
+                let add = i % ( $(".card").length / 2) +1;
+                $(".card").eq(i).find(".back").css("background-image",`url(./card/${add}S.jpg)`);
+                $(".card").eq(i).attr("data-card",add);
+                
+                //洗牌 隨機取一張牌 將他放在目前迴圈跑到的牌後
+                let target = Math.floor(Math.random()*$(".card").length);
+                $(".card").eq(target).insertAfter( $(".card").eq(i));
+            }
+
+
+            $("#start").on("click",function(){
+            let sec = 20;
+            let gametimer=0;
+             $(this).attr("disabled",true);
+                gametimer = setInterval(function(){
+                    sec--;
+                    $("#sec").text(sec);
+                if(sec == 0){
+                    clearInterval(gametimer);
+                    $(this).attr("disabled",false);
+                    setTimeout(()=>{
+                        alert("時間到");
+                    },100)
+                    $("#game")
+                    sec=20; 
+                }
+            },1000)
+            })
+
+            $(".card").on("click", function(){
+                //判斷兩張牌 翻牌小於兩張 且這張還沒翻開
+                //&& !$(this).hasClass("open") 可以沒有?
+                if( $(".open").length < 2 && !$(this).hasClass("open") ){
+                   $(this).addClass("open"); 
+                }
+                //如果翻了兩張牌
+                if( $(".open").length == 2 ){
+                    //一秒翻回來
+                    setTimeout(() =>{
+                        $(".open").removeClass("open");
+                    },1000)
+
+                    //如果兩張一樣 淡出
+                    if( $(".open").eq(0).attr("data-card")== $(".open").eq(1).attr("data-card") ){
+                        $(".open").fadeTo(1000,0).addClass("clear");
+                    }
+
+                    //如果全部都clear
+                    if( $(".clear").length == $(".card").length){
+                        setTimeout(()=>{
+                            alert("過關");
+                        },500);
+                    }
+                }
+            })
+            $("#cheat").on("click",function(){
+                if ($(".card").attr("dd") == "1"){
+                    $(".front").css("opacity","0.5")
+                    $(".card").attr("dd","0");
+                }else{
+                    $(".front").css("opacity","1")
+                    $(".card").attr("dd","1");
+                }
+                })
+        })
+    </script>
+    
+</body>
+</html>
